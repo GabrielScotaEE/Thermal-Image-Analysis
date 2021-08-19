@@ -73,7 +73,7 @@ for image in list_files:
         
 
         # Calculating temperature in calcTemp
-        temperature = processor.calcTemp(ignore_black, crop_colorbar, map)
+        temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
             
         plt.show()
         
@@ -104,9 +104,10 @@ for image in list_files:
         
 
         # Calculating temperature in calcTemp
-        temperature = processor.calcTemp(ignore_black, crop_colorbar, map)
+        temperature, _ = processor.calcTemp(ignore_black, crop_colorbar)
         
         plt.show()
+        
         max_temp.append(max(temperature))
         print("Number of green pixels: {}".format(cv.countNonZero(mask_green)))
         print('The maximum temperature in this image: {}'.format(max(temperature)))
