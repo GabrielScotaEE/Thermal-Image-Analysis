@@ -98,6 +98,7 @@ for image in list_files:
 
         # Getting only nonBlack pixels and storing in ignore_black       
         ignore_black = processor.ignoreBlackPixels(rgb_crop_coi)
+        
         crop_colorbar = list(crop_colorbar)
         
 
@@ -105,8 +106,8 @@ for image in list_files:
         temperature = processor.calcTemp(ignore_black, crop_colorbar, count)
         
         plt.show()
-        max_temp.append(np.average(temperature))
-        print(max_temp)
+        max_temp.append(max(temperature))
+        
         print('The maximum temperature in this image: {}'.format(max(temperature)))
         print('The minimum temperature in this image: {}'.format(min(temperature)))
 
@@ -133,7 +134,7 @@ plt.subplot(131)
 plt.plot(list_area_percent_roi,list_o2r_pixels, 'k')
 plt.ylabel('Number of pixels orange to red')
 plt.xlabel('Area Percent  (%)')
-plt.axis([0, 100, 0, 3000])
+plt.axis([0, 100, 0, 2000])
 
 # Ratio x Voltage
 plt.subplot(132)
