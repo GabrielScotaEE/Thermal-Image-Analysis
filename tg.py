@@ -4,26 +4,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.core.numeric import count_nonzero
 from numpy.lib.function_base import average
-import pandas as pd
 import math
 import time
 from imgProcessor import *
-import imutils
+
 
 list_files = os.listdir('./images')
 list_o2r_pixels = []
 list_area_percent_roi = []
 list_area_percent_total = []
-
-ignore_black = []
+data = []
 colorbar = False
-subtraction_list = []
-sum_sub_list = []
 average_temp = []
 max_temp = []
+count = 0
+
 # Creating processor object
 processor = imgProcessor()
-count = 0
+
+# Creating map with all colors
+map = processor.loadMapCSV('mapColors.csv')
+
 for image in list_files:
     
     img = cv.imread('./images/{}'.format(image))
@@ -72,13 +73,13 @@ for image in list_files:
         
 
         # Calculating temperature in calcTemp
-        temperature = processor.calcTemp(ignore_black, crop_colorbar, count)
+        temperature = processor.calcTemp(ignore_black, crop_colorbar, map)
             
         plt.show()
         
         max_temp.append(max(temperature))
 
-        print("Number of pixels orange-to-red: {}".format(cv.countNonZero(mask)))
+        print("Number of orange-to-red pixels: {}".format(cv.countNonZero(mask)))
         print('The maximum temperature in this image: {}'.format(max(temperature)))
         print('The minimum temperature in this image: {}'.format(min(temperature)))
     else:
@@ -103,25 +104,27 @@ for image in list_files:
         
 
         # Calculating temperature in calcTemp
-        temperature = processor.calcTemp(ignore_black, crop_colorbar, count)
+        temperature = processor.calcTemp(ignore_black, crop_colorbar, map)
         
         plt.show()
         max_temp.append(max(temperature))
-        
+        print("Number of green pixels: {}".format(cv.countNonZero(mask_green)))
         print('The maximum temperature in this image: {}'.format(max(temperature)))
         print('The minimum temperature in this image: {}'.format(min(temperature)))
 
     print("Total pixels: {}".format(int(hsv.size/3)))
 
-    
+   
     # plt.imshow(mask, cmap='gray')   # this colormap will display in black / white
     # plt.show()
     ratio_total = cv.countNonZero(mask)/(hsv.size/3)#------- % Against Total Area
-    ratio_roi = cv.countNonZero(mask)/(3000) # ----- % Against ROI Area
+    ratio_roi = cv.countNonZero(mask)/(2000) # ----- % Against ROI Area
     list_o2r_pixels.append(cv.countNonZero(mask))
     list_area_percent_roi.append(np.round(ratio_roi*100, 3))
     list_area_percent_total.append(np.round(ratio_total*100, 3))
     count += 1
+
+
 
 print('The max temperature in each image: {}'.format(max_temp))
 
