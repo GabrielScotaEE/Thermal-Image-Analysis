@@ -21,6 +21,7 @@ class imgProcessor():
         self.maximum_scale = maximum_colorbarScale
         self.crop_colorbar_columns = sizeCrop_colorbar
         self.memo = {}
+        self.voltage_list = [0,13000,15000,17000,19000,21000,23000]
 
         pass
 
@@ -85,8 +86,10 @@ class imgProcessor():
         return rgb_coi, coi
 
     def show_images(self, rgb_crop_img, rgb_original_img, count):
-
+            
+        
         fig, _ = plt.subplots(nrows=1, ncols=2)
+        fig.canvas.manager.set_window_title('{}V'.format(self.voltage_list[count]))
         fig.tight_layout()
         plt.subplot(1,2,1)
         if count > 0:
