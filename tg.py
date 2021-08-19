@@ -73,6 +73,8 @@ for image in list_files:
         
 
         # Calculating temperature in calcTemp
+        # You can give the input: map. If you already have
+        # mapped all colors (better perfomance)
         temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
             
         plt.show()
@@ -104,7 +106,9 @@ for image in list_files:
         
 
         # Calculating temperature in calcTemp
-        temperature, _ = processor.calcTemp(ignore_black, crop_colorbar)
+        # You can give the input: map. If you already have
+        # mapped all colors (better perfomance)
+        temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
         
         plt.show()
         
@@ -113,7 +117,8 @@ for image in list_files:
         print('The maximum temperature in this image: {}'.format(max(temperature)))
         print('The minimum temperature in this image: {}'.format(min(temperature)))
 
-    print("Total pixels: {}".format(int(hsv.size/3)))
+    if count == 0:
+        print("Total pixels: {}".format(int(hsv.size/3)))
 
    
     # plt.imshow(mask, cmap='gray')   # this colormap will display in black / white
