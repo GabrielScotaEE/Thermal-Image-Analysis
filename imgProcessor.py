@@ -84,7 +84,7 @@ class imgProcessor():
         rgb_coi = cv.cvtColor(coi, cv.COLOR_BGR2RGB)
         return rgb_coi, coi
 
-    def show_images(self, rgb_crop_img, rgb_original_img,count):
+    def show_images(self, rgb_crop_img, rgb_original_img, count):
 
         fig, _ = plt.subplots(nrows=1, ncols=2)
         fig.tight_layout()
@@ -130,19 +130,21 @@ class imgProcessor():
         self.ignoredBlack = ignoredBlack
         self.crop_colorbar = crop_colorbar
         temperature = []
-        #init = time.time()
         
-            
         for self.element in range(len(ignoredBlack)):
             memo = None
-            # Calculate the similarity of two collors
-            # one from the image, another from the colorbar
+           
             init = time.time()
             imPixel = str(self.ignoredBlack[self.element])
             
-            if imPixel in map:
-                id = map[imPixel]
-                    
+            if map is not None:
+                if imPixel in map:
+                    id = map[imPixel]
+                else:
+                    id, memo = self.__compareTwoColors_similarity()
+
+            # Calculate the similarity of two collors
+            # one from the image, another from the colorbar    
             else:
                 id, memo = self.__compareTwoColors_similarity()
             
@@ -151,11 +153,13 @@ class imgProcessor():
             formula_temp = self.base_scale+((self.maximum_scale-self.base_scale)/self.crop_colorbar_columns)*id
             
             temperature.append(round(formula_temp,3))
-        #end = time.time()
-        if memo is not None:
-            return temperature, memo
-        else:
-            return temperature
+        
+        # The return memo is usefull only if you
+        # need to build a map with colors 
+        # using createCSV_withColorsAndIds function
+
+        
+        return temperature, memo
     
     
     def __compareTwoColors_similarity(self):
