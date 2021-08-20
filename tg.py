@@ -30,8 +30,10 @@ for image in list_files:
     img = cv.imread('./images/{}'.format(image))
     
     rgb_img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    # plt.imshow(rgb_img)
+    # plt.show()
     # Croping image to ignore the colorbar in bottom and
-    # the Flir texts
+    # the Flir texts on top
     img = img[70:170,:]
     
     # Converting image domain to HSV.
@@ -39,6 +41,7 @@ for image in list_files:
     
     # Selecting the area with the colorbar
     if colorbar is False:
+        # was using 226:227,57:182
         crop_colorbar = rgb_img[226:227,71:182]
         
         colorbar = True
@@ -50,7 +53,7 @@ for image in list_files:
     # Obs: mask is a grayscale image.
     if cv.countNonZero(mask)>0:
 
-        # Call getContours 
+        # Call getContours to find the edge points
         contours = processor.getContours(mask)
         
         # Call find edge to get extreme points
@@ -58,6 +61,8 @@ for image in list_files:
 
         # Building image only with Color of Interest (coi)
         rgb_coi, coi = processor.build_coi(mask,img)
+
+        # Cropping img through edge points
         crop_coiImg = coi[top:bot,west:east]
         
         # Converting the image color domain bgr to rgb to show in plt.show()
@@ -65,19 +70,18 @@ for image in list_files:
 
         # Showing images
         processor.show_images(rgb_crop_coi,rgb_img,count)
-
+        plt.show()
         # Getting only nonBlack pixels and storing in ignore_black       
         ignore_black = processor.ignoreBlackPixels(rgb_crop_coi)
         
         crop_colorbar = list(crop_colorbar)
-        
-
+      
         # Calculating temperature in calcTemp
         # You can give the input: map. If you already have
         # mapped all colors (better perfomance)
         temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
             
-        plt.show()
+        
         
         max_temp.append(max(temperature))
 
@@ -98,7 +102,7 @@ for image in list_files:
 
         # Showing images
         processor.show_images(rgb_crop_coi,rgb_img,count)
-
+        plt.show()
         # Getting only nonBlack pixels and storing in ignore_black       
         ignore_black = processor.ignoreBlackPixels(rgb_crop_coi)
         
@@ -109,8 +113,6 @@ for image in list_files:
         # You can give the input: map. If you already have
         # mapped all colors (better perfomance)
         temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
-        
-        plt.show()
         
         max_temp.append(max(temperature))
         print("Number of green pixels: {}".format(cv.countNonZero(mask_green)))
@@ -130,7 +132,9 @@ for image in list_files:
     list_area_percent_total.append(np.round(ratio_total*100, 3))
     count += 1
 
-
+# To create a map with all colors just uncoment the code below
+# and get the second output from calcTemp function, call it "memo".
+# processor.createCSV_withColorsAndIds(memo)
 
 print('The max temperature in each image: {}'.format(max_temp))
 
