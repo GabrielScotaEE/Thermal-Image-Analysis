@@ -16,7 +16,7 @@ import csv
 
 class imgProcessor():
 
-    def __init__(self, base_colorbarScale=19.96, maximum_colorbarScale=25, sizeCrop_colorbar=111) :
+    def __init__(self, base_colorbarScale=19.72, maximum_colorbarScale=25, sizeCrop_colorbar=111) :
         self.base_scale = base_colorbarScale
         self.maximum_scale = maximum_colorbarScale
         self.crop_colorbar_columns = sizeCrop_colorbar
@@ -114,6 +114,9 @@ class imgProcessor():
 
    
     def ignoreBlackPixels(self, croped_rgbCoiImg):
+        # Using set because we only want unique values
+        # And we are studying only max and min temperatures
+        # So set have the best performance to do this.
         ignore_black = set()
         rows = croped_rgbCoiImg.shape[0]
         columns = croped_rgbCoiImg.shape[1]
@@ -123,6 +126,7 @@ class imgProcessor():
             for col in range(columns):
                 if list(croped_rgbCoiImg[row][col]) != [0, 0, 0]:
                     ignore_black.add(tuple(croped_rgbCoiImg[row][col]))
+        
         ignore_black = list(ignore_black)                    
         
         return (ignore_black)
@@ -160,8 +164,6 @@ class imgProcessor():
         # The return memo is usefull only if you
         # need to build a map with colors 
         # using createCSV_withColorsAndIds function
-
-        
         return temperature, memo
     
     
@@ -189,6 +191,8 @@ class imgProcessor():
                 # # colors2 refers to colorbar
                 color2_lab = convert_color(colorSRGB_colorbar, LabColor)
                 
+                # Delta return a value, the lowest value means
+                # that color is the similarest
                 delta_e = delta_e_cie2000(color1_lab, color2_lab)
                 
                 # distance = (pixImg[0]-pixColorBar[0])**2+(pixImg[1]-pixColorBar[1])**2+(pixImg[2]-pixColorBar[2])**2
