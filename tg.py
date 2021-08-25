@@ -22,7 +22,7 @@ processor = imgProcessor()
 # Using a map with all colors and ids to improove the performance.
 # importing this map from a csv file.
 # there is a function on imgProcessor()
-# that build this for you --> createCSV_withColorsAndIds(memo) -- line 125.
+# that build this for you --> createCSV_withColorsAndIds(memo) -- line 124.
 # map will be used in calcTemp().  
 map = processor.loadMapCSV('mapColors.csv')
 
@@ -58,12 +58,11 @@ for image in list_files:
         numberOfOrangetoRed = 'orange-to-red'
     else:
         # This var store the result of filter HSV, for green colors
-        mask = processor.filterHSVspeficColors(hsv,[26,0,0],[40,255,255])
+        mask = processor.filterHSVspeficColors(hsv,[24,0,0],[40,255,255])
         numberofGreen = 'green'
  
-    
     # Obs: mask is a grayscale image.
-    # to see the result uncoment the line below
+    # To see the result uncoment the line below
     #plt.imshow(mask)
     #plt.show()
   
@@ -94,7 +93,7 @@ for image in list_files:
     temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
     max_temp.append(max(temperature))
     # Showing images
-    processor.show_images(rgb_crop_coi,rgb_img,count, max(temperature), crop=True)
+    processor.show_images(rgb_crop_coi,rgb_img,count, max(temperature))
     plt.show()
     
     if count > 0:
@@ -119,6 +118,7 @@ for image in list_files:
         list_area_percent_roi.append(np.round(ratio_roi*100, 3))
     else:
         list_area_percent_total.append(0)
+    # Add 1 to count to change the index of files.
     count += 1
 
 # To create a map with all colors just uncoment the code below
@@ -133,17 +133,17 @@ fig.tight_layout()
 voltage_list = [0,13000,15000,17000,19000,21000,23000]
 # N° of pixels x area percent (ratio)
 plt.subplot(131)
-plt.plot(list_area_percent_roi,list_o2r_pixels, 'k')
-plt.ylabel('Number of pixels orange to red')
-plt.xlabel('Area Percent  (%)')
-plt.axis([0, 100, 0, 2000])
+plt.plot(list_o2r_pixels,list_area_percent_roi, color='red', marker='o', linestyle='dashed')
+plt.xlabel('Number of pixels orange to red')
+plt.ylabel('Area Percent  (%)')
+plt.axis([0, 2000, 0, 100])
 
 # Ratio x Voltage
 plt.subplot(132)
-plt.plot(list_area_percent_total,voltage_list)
-plt.ylabel('Voltage (V)')
-plt.xlabel('Area Percent Full Image (%)')
-plt.axis([0, math.ceil(list_area_percent_total[-1]), 0, 25000])
+plt.plot(voltage_list,list_area_percent_total, color='blue', marker='o', linestyle='dashed')
+plt.xlabel('Voltage (V)')
+plt.ylabel('Area Percent Full Image (%)')
+plt.axis([0, 25000, 0, math.ceil(list_area_percent_total[-1])])
 
 # Max temp x Voltage
 plt.subplot(133)
