@@ -19,26 +19,28 @@ count = 0
 # Creating processor object
 processor = imgProcessor()
 
-# Creating map with all colors
+# Using a map with all colors and ids to improove the performance.
 # importing this map from a csv file.
 # there is a function on imgProcessor()
-# that build this for you --> createCSV_withColorsAndIds(memo) -- line 120.
-# map will be used in calcTemp.  
+# that build this for you --> createCSV_withColorsAndIds(memo) -- line 125.
+# map will be used in calcTemp().  
 map = processor.loadMapCSV('mapColors.csv')
 
+# This for runs over all elements (image name files)
+# in list_files
 for image in list_files:
     
-    img = cv.imread('./images/{}'.format(image))
-    #plt.imshow(img)
-    rgb_img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+    originalImg = cv.imread('./images/{}'.format(image))
+    #plt.imshow(originalImg) # -- uncomment to see original image.
+    rgb_img = cv.cvtColor(originalImg, cv.COLOR_BGR2RGB)
     # plt.imshow(rgb_img)
     # plt.show()
     # Croping image to ignore the colorbar in bottom and
     # the Flir texts on top
-    img = img[70:170,:]
+    originalImg = originalImg[70:170,:]
     
     # Converting image domain to HSV.
-    hsv = cv.cvtColor(img,cv.COLOR_BGR2HSV)
+    hsv = cv.cvtColor(originalImg,cv.COLOR_BGR2HSV)
     
     # Selecting the area with the colorbar
     if colorbar is False:
@@ -74,7 +76,7 @@ for image in list_files:
     west,east,top,bot = processor.find_edge_points(contours,count)
 
     # Building the image only with Colors of Interest (coi)
-    rgb_coi, coi = processor.build_coi(mask,img)
+    rgb_coi, coi = processor.build_coi(mask,originalImg)
 
     # Cropping img through edge points
     crop_coiImg = coi[top:bot,west:east]
@@ -109,7 +111,7 @@ for image in list_files:
 
      
     ratio_total = cv.countNonZero(mask)/(hsv.size/3)#------- % Against Total Area
-    ratio_roi = cv.countNonZero(mask)/(2000) # ----- % Against ROI Area
+    ratio_roi = cv.countNonZero(mask)/(2000) #------ % Against ROI Area
     # The first img dont have orange to red (o2r) pixels
     # therefore it is unnecessary to append it value to some lists.
     if count > 0:
