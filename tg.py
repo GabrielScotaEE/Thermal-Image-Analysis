@@ -51,7 +51,7 @@ for image in list_files:
     # Getting the color interval that we want to study on hsv img.
     # check the colors in: https://i.stack.imgur.com/TSKh8.png
     # The 'count' var tell wich image is, from 0 to 7, zero to the first
-    # and seven to the last one.
+    # and seven to the last one, 0 dont have orange-to-red pixels.
     if count > 0:
         # This var store the result of filter HSV, for orange-to-red colors
         mask = processor.filterHSVspeficColors(hsv,[0,0,0], [23,255,255], [150,0,0], [180,255,255])
@@ -61,7 +61,7 @@ for image in list_files:
         mask = processor.filterHSVspeficColors(hsv,[26,0,0],[40,255,255])
         numberofGreen = 'green'
  
-    # Checking if mask has pixels nonZero, i.e white pixels
+    
     # Obs: mask is a grayscale image.
     # to see the result uncoment the line below
     #plt.imshow(mask)
@@ -84,30 +84,29 @@ for image in list_files:
     # Converting the image color domain bgr to rgb to show in plt.show()
     rgb_crop_coi = cv.cvtColor(crop_coiImg, cv.COLOR_BGR2RGB)
 
-    # Showing images
-    processor.show_images(rgb_crop_coi,rgb_img,count)
-    plt.show()
     # Getting only nonBlack pixels and storing in ignore_black       
     ignore_black = processor.ignoreBlackPixels(rgb_crop_coi)
     
     crop_colorbar = list(crop_colorbar)
-    
     # Calculating temperature in calcTemp
     # You can give the input: map. If you already have
     # mapped all colors (better perfomance)
     temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, map)
-    
     max_temp.append(max(temperature))
+    # Showing images
+    processor.show_images(rgb_crop_coi,rgb_img,count, max(temperature), crop=True)
+    plt.show()
+    
     if count > 0:
-        print("Number of {} pixels: {}".format(numberOfOrangetoRed,cv.countNonZero(mask)))
+        print("Number of pixels:",numberOfOrangetoRed,cv.countNonZero(mask))
     else:
-        print("Number of {} pixels: {}".format(numberofGreen,cv.countNonZero(mask)))
-    print('The maximum temperature in this image: {}'.format(max(temperature)))
-    print('The minimum temperature in this image: {}'.format(min(temperature)))
+        print("Number of pixels:",numberofGreen,cv.countNonZero(mask))
+    print('The maximum temperature in this image:',max(temperature))
+    print('The minimum temperature in this image:',min(temperature))
 
 
     if count == 0:
-        print("Total pixels: {}".format(int(hsv.size/3)))
+        print("Total pixels:",int(hsv.size/3))
 
      
     ratio_total = cv.countNonZero(mask)/(hsv.size/3)#------- % Against Total Area
@@ -126,7 +125,7 @@ for image in list_files:
 # and get the second output from calcTemp function, call it "memo".
 # processor.createCSV_withColorsAndIds(memo)
 
-print('The max temperature in each image: {}'.format(max_temp))
+print('The max temperature in each image:',max_temp)
 
 
 fig, axes = plt.subplots(nrows=1, ncols=3)
@@ -148,7 +147,7 @@ plt.axis([0, math.ceil(list_area_percent_total[-1]), 0, 25000])
 
 # Max temp x Voltage
 plt.subplot(133)
-plt.plot(voltage_list,max_temp,'ro')
+plt.plot(voltage_list,max_temp,color='green', marker='o', linestyle='dashed')
 plt.xlabel('Voltage (V)')
 plt.ylabel('Max Temp (C°)')
 plt.axis([0, 25000, 20, 26])
