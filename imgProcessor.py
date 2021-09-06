@@ -1,19 +1,22 @@
 import cv2 as cv
 import numpy as np
 import matplotlib.pyplot as plt
-from numpy.core.numeric import count_nonzero
-from numpy.lib.function_base import average
 import pandas as pd
 import time
 import imutils
-from functools import lru_cache
-from colormath.color_objects import sRGBColor, LabColor, BaseRGBColor
+from colormath.color_objects import sRGBColor, LabColor
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
 
 
 class imgProcessor():
-    
+    '''
+    Knowing that the scale goes from 19 to 25 the image was cropped
+    in the colorbar resulting in 125 corresponding columns. 
+    However, in the first 14 columns the colors were not "growing" gradually
+    so it was decided to start from the 15th column. 
+    Therefore the base of the scale was shifted to 19.72
+    '''
     def __init__(self, base_colorbarScale=19.72, maximum_colorbarScale=25, sizeCrop_colorbar=111) :
         self.base_scale = float(base_colorbarScale)
         self.maximum_scale = int(maximum_colorbarScale)
@@ -165,6 +168,13 @@ class imgProcessor():
             
             end = time.time()
             #print(end-init)
+            '''
+            To construct this formula, the maximum value of the scale was subtracted 
+            from the smallest value and the result divided by the number of columns. 
+            This resulting value shows how many degrees varies from one column to 
+            another so to get the maximum of the scale multiply by the 
+            total columns and sum the base value of the scale.
+            '''
             formula_temp = self.base_scale+((self.maximum_scale-self.base_scale)/self.crop_colorbar_columns)*id
             
             temperature.append(round(formula_temp,3))
@@ -193,7 +203,7 @@ class imgProcessor():
             for index in range (self.crop_colorbar_columns):
                 # Getting the pixel from the img.
                 pixImg = np.asarray(self.ignoredBlack[self.element])
-                # Converting to sRGB
+                # Converting to sRGB -- values from 0 to 1 instead 0 to 255 like commom RGB
                 colorSRGB_img = sRGBColor(pixImg[0]/255, pixImg[1]/255, pixImg[2]/255)
                 # Getting the pixel from the colorbar.
                 pixColorBar = self.crop_colorbar[0][index]
@@ -210,14 +220,16 @@ class imgProcessor():
                 # The convertion from sRGB to Lab is made 
                 # because the delta_e_cie2000 only accept Lab colors.
 
-                # Delta return a value, the lowest value means
+                # Delta return a value. The lowest value means
                 # that color is the similarest
                 delta_e = delta_e_cie2000(color1_lab, color2_lab)
-                
-                # Here is another way to compare the similarity
-                # of two colors
-                # distance = (pixImg[0]-pixColorBar[0])**2+(pixImg[1]-pixColorBar[1])**2+(pixImg[2]-pixColorBar[2])**2
-                # distance = np.sqrt(distance)
+
+                '''
+                 Here is another way to compare the similarity
+                 of two colors using Euclidean Distance.
+                 distance = (pixImg[0]-pixColorBar[0])**2+(pixImg[1]-pixColorBar[1])**2+(pixImg[2]-pixColorBar[2])**2
+                 distance = np.sqrt(distance)
+                '''
 
                 # Append all values from delta result and store 
                 # in similarityList
