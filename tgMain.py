@@ -24,8 +24,8 @@ processor = imgProcessor()
 
 # Using a map with all colors and ids to improove the performance.
 # importing this map from a csv file.
-# there is a function on imgProcessor()
-# that build this for you --> createCSV_withColorsAndIds(memo) -- line 124.
+# there is a function on ColorMapper()
+# that build this for you --> createCSV_withColorsAndIds(memo) -- line 127.
 # map will be used in calcTemp().  
 map = mapper.loadMapCSV('mapColors.csv')
 
