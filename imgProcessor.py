@@ -1,25 +1,23 @@
 import cv2 as cv
-import os
 import numpy as np
 import matplotlib.pyplot as plt
 from numpy.core.numeric import count_nonzero
 from numpy.lib.function_base import average
 import pandas as pd
-import math
 import time
 import imutils
 from functools import lru_cache
 from colormath.color_objects import sRGBColor, LabColor, BaseRGBColor
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
-import csv
+
 
 class imgProcessor():
-
+    
     def __init__(self, base_colorbarScale=19.72, maximum_colorbarScale=25, sizeCrop_colorbar=111) :
-        self.base_scale = base_colorbarScale
-        self.maximum_scale = maximum_colorbarScale
-        self.crop_colorbar_columns = sizeCrop_colorbar
+        self.base_scale = float(base_colorbarScale)
+        self.maximum_scale = int(maximum_colorbarScale)
+        self.crop_colorbar_columns = int(sizeCrop_colorbar)
         self.memo = {}
         self.voltage_list = [0,13000,15000,17000,19000,21000,23000]
 
@@ -79,10 +77,10 @@ class imgProcessor():
         rgb_coi = cv.cvtColor(coi, cv.COLOR_BGR2RGB)
         return rgb_coi, coi
 
-    def show_images(self, rgb_crop_img, rgb_original_img, count):
+    def show_images(self, rgb_crop_img, rgb_original_img, count, maxtemp, crop=False):
        
         fig, _ = plt.subplots(nrows=1, ncols=2)
-        fig.canvas.manager.set_window_title('{}V'.format(self.voltage_list[count]))
+        fig.canvas.manager.set_window_title('{}V. The Max Temperature is: {}'.format(self.voltage_list[count], maxtemp))
         fig.tight_layout()
         plt.subplot(1,2,1)
         if count > 0:
@@ -90,7 +88,10 @@ class imgProcessor():
         else:
             plt.title('Croped original image')
         plt.imshow(rgb_crop_img)
-        rgb_img_cropped = rgb_original_img[70:170,:]
+        if crop ==True:
+            rgb_img_cropped = rgb_original_img[70:170,:]
+        else:
+            rgb_img_cropped = rgb_original_img
         plt.subplot(1,2,2)
         plt.title('Original Image')
         plt.imshow(rgb_img_cropped)
@@ -242,39 +243,3 @@ class imgProcessor():
         pixel_total_df = pd.DataFrame(list(zip(list_area_percent_total,voltage_list)), columns =['%','Voltage'])
         print(pixel_total_df)
 
-    # Creates CSV map with Colors and it respectives ids.
-    # with memo variable(dict), that stores the RGB values and id.
-    def createCSV_withColorsAndIds(self, memo):
-        data = []
-        for key, value in memo.items():
-            infos = []
-            infos.append(key)
-            infos.append(value)
-            data.append(infos)
-    
-        header = ['color', 'id']
-        with open('mapColors.csv', 'w', encoding='UTF8', newline='') as f:
-            writer = csv.writer(f)
-
-            # write the header
-            writer.writerow(header)
-
-            # write multiple rows
-            writer.writerows(data)
-    
-    # Loads the map from a csv file
-    # note that the map.keys() are string values
-    # and map.values() are int values
-    def loadMapCSV(self, CSVnameFile):
-        with open(CSVnameFile, encoding="utf8") as f:
-            csv_reader = csv.DictReader(f)
-            # skip the header
-            next(csv_reader)
-            # creating map with all colors
-            map = {}
-            # show the data
-            for line in csv_reader:
-                id = line['id']
-                id = int(id.replace("'", ""))
-                map[line['color']] = id
-        return map
