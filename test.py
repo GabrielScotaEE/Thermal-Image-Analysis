@@ -38,14 +38,57 @@ from colormath.color_diff import delta_e_cie2000
 # distance = (red[0]-xx[0])**2+(red[1]-xx[1])**2+(red[2]-xx[2])**2
 # distance = np.sqrt(distance)
 # print ("The difference between the 2 color = {} " .format(distance))
+import csv
 
-d = set()
+with open('mapColors.csv', encoding="utf8") as f:
+    csv_reader = csv.DictReader(f)
+    # skip the header
+    next(csv_reader)
+    # creating map with all colors
+    map = {}
+    # show the data
+    for line in csv_reader:
+        color = (line['color'])
+        color = (color.replace("'", ""))
+        print(color)
+        id = line['id']
+        id = int(id.replace("'", ""))
+        
+        map[color] = id
+        
+        # print(f"The RGB color:{line['color']} has {line['id']} id".join(line))
+x = (255,255,255)
+print(type(x))
+print(str(x))    
 
-d.add((255,255,255))
-d.add((255,255,255))
-d.add((255,165,7))
-print(d)
-d = list(d)
-for i in d:
-    print(i)
 
+# with open('mapColors.csv', encoding="utf8") as f:
+#     csv_reader = csv.reader(f, delimiter = ';', skipinitialspace=True)
+
+#     # skip the first row
+#     next(csv_reader)
+#     map = {}
+#     # show the data
+#     for line in csv_reader:
+#         print (f"The RGB color:{line['color']} has {line['id']} id".join(line))
+
+
+
+
+
+
+
+# memo = {}
+# data = []
+# infos = []
+# memo[(199,200,11)] = 48
+# memo[(158,198,24)] = 44
+# memo[(144,195,38)] = 40
+
+# for key, value in memo.items():
+#     infos = []
+#     infos.append(key)
+#     infos.append(value)
+#     data.append(infos)
+#     # print(key, value)
+# print(len(data))

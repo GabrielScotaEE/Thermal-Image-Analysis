@@ -12,6 +12,7 @@ from functools import lru_cache
 from colormath.color_objects import sRGBColor, LabColor, BaseRGBColor
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
+import csv
 
 class imgProcessor():
 
@@ -19,6 +20,7 @@ class imgProcessor():
         self.base_scale = base_colorbarScale
         self.maximum_scale = maximum_colorbarScale
         self.crop_colorbar_columns = sizeCrop_colorbar
+        self.memo = {}
 
         pass
 
@@ -123,68 +125,77 @@ class imgProcessor():
         return (ignore_black)
 
    
-    def calcTemp(self, ignoredBlack, crop_colorbar, count):
+    def calcTemp(self, ignoredBlack, crop_colorbar, map=None):
         
         self.ignoredBlack = ignoredBlack
         self.crop_colorbar = crop_colorbar
         temperature = []
-        init = time.time()
-        for self.element in range(len(ignoredBlack)):
+        #init = time.time()
+        
             
+        for self.element in range(len(ignoredBlack)):
+            memo = None
             # Calculate the similarity of two collors
             # one from the image, another from the colorbar
+            init = time.time()
+            imPixel = str(self.ignoredBlack[self.element])
             
-            id = self.__compareTwoColors_similarity()
-         
+            if imPixel in map:
+                id = map[imPixel]
+                    
+            else:
+                id, memo = self.__compareTwoColors_similarity()
+            
+            end = time.time()
+            #print(end-init)
             formula_temp = self.base_scale+((self.maximum_scale-self.base_scale)/self.crop_colorbar_columns)*id
             
             temperature.append(round(formula_temp,3))
-        end = time.time()
-        print(end-init)
-        return temperature
+        #end = time.time()
+        if memo is not None:
+            return temperature, memo
+        else:
+            return temperature
     
     
     def __compareTwoColors_similarity(self):
         similarityList = []
-        memo = {}
-        # Comparing orange to red pixel with pixels colors in colorbar
-        # to see wich color is the nearest to it.
         
-        for index in range (self.crop_colorbar_columns):
+        # Comparing all pixels from img with pixels in colorbar
+        # to see wich color is the nearest to it.
+        imgPixel_tuple = tuple(self.ignoredBlack[self.element])
+            
+        if imgPixel_tuple in self.memo:
+            return self.memo[imgPixel_tuple], self.memo
+        else: 
+            for index in range (self.crop_colorbar_columns):
 
-            pixImg = np.asarray(self.ignoredBlack[self.element])
-            colorSRGB_img = sRGBColor(pixImg[0]/255, pixImg[1]/255, pixImg[2]/255)
+                pixImg = np.asarray(self.ignoredBlack[self.element])
+                colorSRGB_img = sRGBColor(pixImg[0]/255, pixImg[1]/255, pixImg[2]/255)
 
-            imgPixel_tuple = tuple(self.ignoredBlack[self.element])
-            
-            # if imgPixel_tuple in memo:
-            #     return memo[imgPixel_tuple]
-            
-            
-            pixColorBar = self.crop_colorbar[0][index]
-            colorSRGB_colorbar = sRGBColor(pixColorBar[0]/255, pixColorBar[1]/255, pixColorBar[2]/255)
-            
-            # color1 refers to image
-            color1_lab = convert_color(colorSRGB_img, LabColor)
+                pixColorBar = self.crop_colorbar[0][index]
+                colorSRGB_colorbar = sRGBColor(pixColorBar[0]/255, pixColorBar[1]/255, pixColorBar[2]/255)
+                
+                # color1 refers to image
+                color1_lab = convert_color(colorSRGB_img, LabColor)
 
-            # # colors2 refers to colorbar
-            color2_lab = convert_color(colorSRGB_colorbar, LabColor)
-            
-            delta_e = delta_e_cie2000(color1_lab, color2_lab)
-            
-            # distance = (pixImg[0]-pixColorBar[0])**2+(pixImg[1]-pixColorBar[1])**2+(pixImg[2]-pixColorBar[2])**2
-            # distance = np.sqrt(distance)
+                # # colors2 refers to colorbar
+                color2_lab = convert_color(colorSRGB_colorbar, LabColor)
+                
+                delta_e = delta_e_cie2000(color1_lab, color2_lab)
+                
+                # distance = (pixImg[0]-pixColorBar[0])**2+(pixImg[1]-pixColorBar[1])**2+(pixImg[2]-pixColorBar[2])**2
+                # distance = np.sqrt(distance)
 
-            similarityList.append(delta_e)
+                similarityList.append(delta_e)
 
             # Get the lowest value from the similarity list
             id = similarityList.index(min(similarityList))
             
             
-            memo[imgPixel_tuple]=id
-                 
-        return id
-    
+            self.memo[imgPixel_tuple]=id
+            return id, self.memo
+        
     def printLikeaTable(self, list_area_percent_roi, list_o2r_pixels, list_area_percent_total, voltage_list):
         
         pixel_roi_df = pd.DataFrame(list(zip(list_area_percent_roi,list_o2r_pixels)), columns =['%','N° of pixels'])
@@ -192,4 +203,34 @@ class imgProcessor():
         pixel_total_df = pd.DataFrame(list(zip(list_area_percent_total,voltage_list)), columns =['%','Voltage'])
         print(pixel_total_df)
 
-        pass
+    def createCSV_withColorsAndIds(self, memo):
+        data = []
+        for key, value in memo.items():
+            infos = []
+            infos.append(key)
+            infos.append(value)
+            data.append(infos)
+    
+        header = ['color', 'id']
+        with open('mapColors.csv', 'w', encoding='UTF8', newline='') as f:
+            writer = csv.writer(f)
+
+            # write the header
+            writer.writerow(header)
+
+            # write multiple rows
+            writer.writerows(data)
+    
+    def loadMapCSV(self, CSVnameFile):
+        with open(CSVnameFile, encoding="utf8") as f:
+            csv_reader = csv.DictReader(f)
+            # skip the header
+            next(csv_reader)
+            # creating map with all colors
+            map = {}
+            # show the data
+            for line in csv_reader:
+                id = line['id']
+                id = int(id.replace("'", ""))
+                map[line['color']] = id
+        return map
