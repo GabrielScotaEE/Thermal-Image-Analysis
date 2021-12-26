@@ -31,7 +31,7 @@ processor = imgProcessor(base_colorbarScale=base, maximum_colorbarScale=edge, cu
 # there is a function on ColorMapper()
 # that build this for you --> createCSV_withColorsAndIds(memo) -- line 127.
 # map will be used in calcTemp().  
-# mapped_colors = mapper.loadMapCSV('bad_contact.csv')
+mapped_colors = mapper.loadMapCSV('bad_contact.csv')
 
 # This for runs over all elements (image name files)
 # in list_files
@@ -102,8 +102,8 @@ for image in list_files:
     crop_colorbar = list(crop_colorbar)
     # Calculating temperature in calcTemp
     # You can give the input: map. If you already have
-    # mapped all colors (better perfomance)
-    temperature, memo = processor.calcTemp(ignore_black, crop_colorbar)
+    # mapped all colors (better performance)
+    temperature, _ = processor.calcTemp(ignore_black, crop_colorbar, mapped_colors)
     max_temp.append(max(temperature))
     # Showing images
     processor.show_images(rgb_crop_coi, rgb_img, count, max(temperature), analysis)
@@ -134,7 +134,7 @@ for image in list_files:
 
 # To create a map with all colors just uncomment the code below
 # and get the second output from calcTemp function, call it "memo".
-mapper.createCSV_withColorsAndIds(memo)
+# mapper.createCSV_withColorsAndIds(memo)
 
 print('The max temperature in each image:', max_temp)
 
